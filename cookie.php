@@ -7,13 +7,17 @@ class NoCookie extends \Exception {}
 
 class cookie
 {
-
     const MINUTE = 60;
     const HOUR = 3600;
     const DAY = 86400;
     const ERR_NAME = 'Cookie Name Must Be Set';
     const ERR_DOMAIN = 'Cookie Domain Must Be Set';
     const ERR_NOCOOKIE = 'Cookie Does Not Exist';
+
+    public static function hash($data)
+    {
+        return hash("sha256",$data);
+    }
 
     private $cmName=null;
     private $cmDomain=null;
@@ -47,15 +51,6 @@ class cookie
         }
     }
 
-    /*
-    public function select($name,$domain)
-    {
-        $this->cmName = $name;
-        $this->cmDomain = $domain;
-        return true;
-    }
-    */
-
     public function debug()
     {
         echo "cmName: ".$this->cmName."<br />";
@@ -64,22 +59,9 @@ class cookie
         echo "cmData: ".$this->cmData."<br />";
     }
 
-    /*
-    public function read()
-    {
-        if(isset($_COOKIE[$this->cmName]))
-        {
-            $this->cmData = $_COOKIE[$this->cmName];
-            return $this->cmData;
-        }else{
-            return false;
-        }
-    }
-    */
-
     public function setCookie($data,$hours=24,$hash=false)
     {
-        $this->cmData = ($hash) ? $this->hash($data) : $data;
+        $this->cmData = ($hash) ? self::hash($data) : $data;
         $this->cmHours = time()+(self::HOURS*$hours);
 
         if(is_null($this->cmName)) { throw new InvalidDetails(self::ERR_NAME); }
@@ -107,7 +89,7 @@ class cookie
             throw new NoCookie(self::ERR_NOCOOKIE.': Cannot Verify Data');
         }
         if($hashed){
-            return ($this->cmData == $this->hash($data));
+            return ($this->cmData == self::hash($data));
         }else{
             return ($this->cmData == $data);
         }
@@ -122,10 +104,27 @@ class cookie
         return true;
     }
 
-    public function hash($data)
+    /*
+    public function select($name,$domain)
     {
-        return hash("sha256",$data);
+        $this->cmName = $name;
+        $this->cmDomain = $domain;
+        return true;
     }
+    */
+
+    /*
+    public function read()
+    {
+        if(isset($_COOKIE[$this->cmName]))
+        {
+            $this->cmData = $_COOKIE[$this->cmName];
+            return $this->cmData;
+        }else{
+            return false;
+        }
+    }
+    */
 }
 
 ?>
