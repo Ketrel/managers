@@ -62,7 +62,7 @@ class cookie
     public function setCookie($data,$hours=24,$hash=false)
     {
         $this->cmData = ($hash) ? self::hash($data) : $data;
-        $this->cmHours = time()+(self::HOURS*$hours);
+        $this->cmHours = time()+(self::HOUR*$hours);
 
         if(is_null($this->cmName)) { throw new InvalidDetails(self::ERR_NAME); }
         if(is_null($this->cmDomain)) { throw new InvalidDetails(self::ERR_DOMAIN); }
@@ -100,7 +100,7 @@ class cookie
         if(!$this->cmExists){
             throw new NoCookie(self::ERR_NOCOOKIE.': Cannot Extend Expiration');
         }
-        setCookie($this->cmName,$this->cmData,time()+(self::hours*$reSetHours),$this->cmPath,$this->cmDomain);
+        setCookie($this->cmName,$this->cmData,time()+(self::HOUR*$reSetHours),$this->cmPath,$this->cmDomain);
         return true;
     }
 
