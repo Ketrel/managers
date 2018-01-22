@@ -44,7 +44,7 @@ class cookie
     }
 
     public function readCookie(){
-        if ($this->$cmExists){
+        if ($this->cmExists){
             return $this->cmData;
         }else{
             return false;
