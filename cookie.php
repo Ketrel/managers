@@ -68,6 +68,7 @@ class cookie
         if(is_null($this->cmDomain)) { throw new InvalidDetails(self::ERR_DOMAIN); }
 
         setcookie($this->cmName,$this->cmData,$this->cmHours,$this->cmPath,$this->cmDomain);
+        $this->cmExists = true;
 
         return true;
     }
