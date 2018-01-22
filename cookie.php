@@ -61,11 +61,11 @@ class cookie
 
     public function setCookie($data,$hours=24,$hash=false)
     {
-        $this->cmData = ($hash) ? self::hash($data) : $data;
-        $this->cmHours = time()+(self::HOUR*$hours);
-
         if(is_null($this->cmName)) { throw new InvalidDetails(self::ERR_NAME); }
         if(is_null($this->cmDomain)) { throw new InvalidDetails(self::ERR_DOMAIN); }
+
+        $this->cmData = ($hash) ? self::hash($data) : $data;
+        $this->cmHours = time()+(self::HOUR*$hours);
 
         setcookie($this->cmName,$this->cmData,$this->cmHours,$this->cmPath,$this->cmDomain);
         $this->cmExists = true;
@@ -77,6 +77,7 @@ class cookie
     {
         if(is_null($this->cmName)) { throw new InvalidDetails(self::ERR_NAME); }
         if(is_null($this->cmDomain)) { throw new InvalidDetails(self::ERR_DOMAIN); }
+        if(!$this->cmExists){ throw new NoCookie(self::ERR_NOCOOKIE.': Cannot Unset Non-Existant Cookie'); }
 
         setcookie($this->cmName,'',time()-3600,$this->cmPath,$this->cmDomain);
 
@@ -89,9 +90,7 @@ class cookie
 
     public function verifyData($data,$hashed=false)
     {
-        if(!$this->cmExists){
-            throw new NoCookie(self::ERR_NOCOOKIE.': Cannot Verify Data');
-        }
+        if(!$this->cmExists){ throw new NoCookie(self::ERR_NOCOOKIE.': Cannot Verify Data'); }
         if($hashed){
             return ($this->cmData == self::hash($data));
         }else{
