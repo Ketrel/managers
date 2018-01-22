@@ -104,6 +104,9 @@ class cookie
         return true;
     }
 
+
+    //Function below this point are deprecated, and either will be re-written or removed
+
     /*
     public function select($name,$domain)
     {
