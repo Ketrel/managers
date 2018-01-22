@@ -75,13 +75,16 @@ class cookie
 
     public function unsetCookie()
     {
-        if(is_null($this->cmName) || is_null($this->cmDomain))
-        {
-            return false;
-        }else{
-            setcookie($this->cmName,'',time()-3600,$this->cmPath,$this->cmDomain);
-            return true;
-        }
+        if(is_null($this->cmName)) { throw new InvalidDetails(self::ERR_NAME); }
+        if(is_null($this->cmDomain)) { throw new InvalidDetails(self::ERR_DOMAIN); }
+
+        setcookie($this->cmName,'',time()-3600,$this->cmPath,$this->cmDomain);
+
+        $this->cmData = null;
+        $this->cmHours = null;
+        $this->cmExists = false;
+
+        return true;
     }
 
     public function verifyData($data,$hashed=false)
