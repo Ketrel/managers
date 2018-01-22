@@ -39,7 +39,7 @@ class cookie
         }
     }
 
-    public function isSet(){
+    public function checkSet(){
         return $this->cmExists;
     }
 
