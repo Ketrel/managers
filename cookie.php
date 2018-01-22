@@ -1,29 +1,60 @@
 <?php
 
-namespace ketrel\manager;
+namespace ketrel\managers;
+
+class InvalidDetails extends \Exception {}
+class NoCookie extends \Exception {}
 
 class cookie
 {
+
+    const MINUTE = 60;
+    const HOUR = 3600;
+    const DAY = 86400;
+    const ERR_NAME = 'Cookie Name Must Be Set';
+    const ERR_DOMAIN = 'Cookie Domain Must Be Set';
+    const ERR_NOCOOKIE = 'Cookie Does Not Exist';
 
     private $cmName=null;
     private $cmDomain=null;
     private $cmPath="/";
     private $cmHours=null;
     private $cmData=null;
-
+    private $cmExists=false;
 
     public function __construct($name=null,$domain=null)
     {
+        if(is_null($name)){ throw new InvalidDetails(self::ERR_NAME); }
+        if(is_null($domain)){ throw new InvalidDetails(self::ERR_DOMAIN); }
+
         $this->cmName = $name;
         $this->cmDomain = $domain;
+        if(isset($_COOKIE[$this->cmName])){
+            $this->cmExists = true;
+            $this->cmData = $_COOKIE[$this->cmName];
+        }
     }
 
+    public function isset(){
+        return $this->cmExists;
+    }
+
+    public function readCookie(){
+        if ($this->$cmExists){
+            return $this->cmData;
+        }else{
+            return false;
+        }
+    }
+
+    /*
     public function select($name,$domain)
     {
         $this->cmName = $name;
         $this->cmDomain = $domain;
         return true;
     }
+    */
 
     public function debug()
     {
@@ -33,6 +64,7 @@ class cookie
         echo "cmData: ".$this->cmData."<br />";
     }
 
+    /*
     public function read()
     {
         if(isset($_COOKIE[$this->cmName]))
@@ -43,26 +75,19 @@ class cookie
             return false;
         }
     }
+    */
 
     public function setCookie($data,$hours=24,$hash=false)
     {
-        if($hash)
-        {
-            $data = $this->hash($data);
-        }
-        $this->cmData = $data;
+        $this->cmData = ($hash) ? $this->hash($data) : $data;
+        $this->cmHours = time()+(self::HOURS*$hours);
 
-        $this->cmHours = time()+(60*60*$hours);
-        //60 Seconds (Minute) * 60 Minutes (Hour) * 24 Hours (Day) * -x- Day(s)
+        if(is_null($this->cmName)) { throw new InvalidDetails(self::ERR_NAME); }
+        if(is_null($this->cmDomain)) { throw new InvalidDetails(self::ERR_DOMAIN); }
 
-        if(is_null($this->cmName) || is_null($this->cmDomain))
-        {
-            echo "error, not setting";
-            return false;
-        }else{
-            setcookie($this->cmName,$this->cmData,$this->cmHours,$this->cmPath,$this->cmDomain);
-            return true;
-        }
+        setcookie($this->cmName,$this->cmData,$this->cmHours,$this->cmPath,$this->cmDomain);
+
+        return true;
     }
 
     public function unsetCookie()
@@ -76,36 +101,25 @@ class cookie
         }
     }
 
-    public function verifyData($data,$hashed=false,$reSetHours=0)
+    public function verifyData($data,$hashed=false)
     {
-        if(($data == $this->cmData) && $hashed != true)
-        {
-            if(is_numeric($reSetHours) && $reSetHours > 0)
-            {
-                $this->refresh($reSetHours);
-            }
-            return true;
+        if(!$this->cmExists){
+            throw new NoCookie(self::ERR_NOCOOKIE.': Cannot Verify Data');
         }
-        elseif(($this->hash($data) == $this->cmData) && $hashed == true)
-        {
-            if(is_numeric($reSetHours) && $reSetHours > 0)
-            {
-                $this->refresh($reSetHours);
-            }
-            return true;
-        }
-        else
-        {
-            return false;
+        if($hashed){
+            return ($this->cmData == $this->hash($data));
+        }else{
+            return ($this->cmData == $data);
         }
     }
 
-    public function refresh($reSetHours=24)
+    public function extend($reSetHours=24)
     {
-        if($this->read())
-        {
-            setCookie($this->cmName,$this->cmData,time()+(60*60*$reSetHours),$this->cmPath,$this->cmDomain);
+        if(!$this->cmExists){
+            throw new NoCookie(self::ERR_NOCOOKIE.': Cannot Extend Expiration');
         }
+        setCookie($this->cmName,$this->cmData,time()+(self::hours*$reSetHours),$this->cmPath,$this->cmDomain);
+        return true;
     }
 
     public function hash($data)
